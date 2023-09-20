@@ -38,5 +38,5 @@ route(app);
 routeAdmin(app);
 
 app.listen(port, () => {
-  console.log(`App listening opn the port : ${port}`);
+  console.log(`App listening on the port : ${port}`);
 });
