@@ -1,5 +1,6 @@
 // Kết nối Express
 const express = require("express");
+var path = require("path");
 var methodOverride = require("method-override");
 var bodyParser = require("body-parser");
 var flash = require("express-flash");
@@ -18,6 +19,10 @@ app.use(cookieParser("HJSHDJSJJASHDJ"));
 app.use(session({ cookie: { maxAge: 60000 } }));
 app.use(flash());
 // End Flash
+//TinyMCE
+app.use("/tinymce", express.static(path.join(__dirname, "node_modules", "tinymce")));
+
+// End TinyMCE
 // Gọi routes
 const routeAdmin = require("./routes/admin/index.route");
 const route = require("./routes/client/index.route");

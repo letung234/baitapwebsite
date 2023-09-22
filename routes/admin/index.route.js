@@ -2,6 +2,7 @@ const systemConfig = require("../../config/system");
 
 const dashboardRouters = require("./dashboard.route");
 const productRouters = require("./product.route");
+const productCategory = require("./products-category.route");
 
 module.exports = (app) => {
   const PATH_ADMIN = systemConfig.prefixAdmin;
@@ -9,4 +10,6 @@ module.exports = (app) => {
   app.use(PATH_ADMIN + "/dashboard", dashboardRouters);
 
   app.use(PATH_ADMIN + "/products", productRouters);
+
+  app.use(PATH_ADMIN + "/products-category", productCategory);
 };
