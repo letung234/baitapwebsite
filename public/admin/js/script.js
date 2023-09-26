@@ -12,7 +12,6 @@ if (buttonStatus) {
       } else {
         url.searchParams.delete("status");
       }
-
       window.location.href = url.href;
     });
   });
