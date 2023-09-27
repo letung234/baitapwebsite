@@ -11,5 +11,7 @@ router.get("/create", controller.create);
 router.patch("/change-status/:status/:id", controller.changeStatus);
 router.patch("/change-multi", controller.changeMulti);
 router.post("/create", upload.single("thumbnail"), uploadStream.upload, validate.creatPost, controller.createCategory);
+router.get("/edit/:id", controller.edit);
+router.patch("/edit/:id", upload.single("thumbnail"), uploadStream.upload, validate.creatPost, controller.editPatch);
 
 module.exports = router;

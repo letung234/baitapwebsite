@@ -3,7 +3,7 @@ const systemConfig = require("../../config/system");
 const FilterStatusHelper = require("../../helpers/filterStatus");
 const SearchHelper = require("../../helpers/search");
 const filterStatus = require("../../helpers/filterStatus");
-const createTreeHelper = require("../../helpers/createTree")
+const createTreeHelper = require("../../helpers/createTree");
 // [GET] /admin/products-category
 
 module.exports.index = async (req, res) => {
@@ -88,8 +88,8 @@ module.exports.changeMulti = async (req, res) => {
 
 // [GET] /admin/products-category/create
 module.exports.create = async (req, res) => {
-  let find ={
-    deleted : false
+  let find = {
+    deleted: false,
   };
 
   const records = await ProductCategory.find(find);
@@ -112,4 +112,45 @@ module.exports.createCategory = async (req, res) => {
   await record.save();
 
   res.redirect(`${systemConfig.prefixAdmin}/products-category`);
+};
+
+// [GET] /admin/products-category/edit/:id
+
+module.exports.edit = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const data = await ProductCategory.findOne({
+      _id: id,
+      deleted: false,
+    });
+    const records = await ProductCategory.find({ deleted: false });
+    const newRecords = createTreeHelper.tree(records);
+    res.render("admin/pages/products-category/edit", {
+      pageTitle: "Chỉnh sửa danh mục sản phẩm",
+      data: data,
+      records: newRecords,
+    });
+  } catch (error) {
+    res.redirect(`${systemConfig.prefixAdmin}/products-category`);
+  }
+};
+
+// [PATCH] /admin/products-category/edit/:id
+module.exports.editPatch = async (req, res) => {
+  try {
+    const id = req.params.id;
+    req.body.position = parseInt(req.body.position);
+    await ProductCategory.updateOne(
+      {
+        _id: id,
+      },
+      req.body
+    );
+    req.flash("success", "Cập nhật thành công");
+    res.redirect("back");
+  } catch (error) {
+    req.flash("error", "Cập nhật thất bại");
+    
+  }
 };
