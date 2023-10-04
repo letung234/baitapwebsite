@@ -13,5 +13,6 @@ router.patch("/change-multi", controller.changeMulti);
 router.post("/create", upload.single("thumbnail"), uploadStream.upload, validate.creatPost, controller.createCategory);
 router.get("/edit/:id", controller.edit);
 router.patch("/edit/:id", upload.single("thumbnail"), uploadStream.upload, validate.creatPost, controller.editPatch);
-
+router.delete("/delete/:id",controller.delete)
+router.get("/detail/:id",controller.detail)
 module.exports = router;
