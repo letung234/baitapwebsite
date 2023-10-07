@@ -6,7 +6,7 @@ var bodyParser = require("body-parser");
 var flash = require("express-flash");
 var cookieParser = require("cookie-parser");
 var session = require("express-session");
-
+var moment = require("moment");
 const app = express();
 require("dotenv").config();
 const port = process.env.PORT;
@@ -31,7 +31,7 @@ const systemConfig = require("./config/system");
 // App local variables
 // Tạo ra biến toàn cục (file pub nào cũng dùng được)
 app.locals.prefixAdmin = systemConfig.prefixAdmin;
-
+app.locals.moment = moment;
 // Kêt nối database
 const database = require("./config/database");
 database.connect();
