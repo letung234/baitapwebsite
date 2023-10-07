@@ -1,20 +1,20 @@
 extends ../../layouts/default.pug
 
 block main 
-   h1(class="mb-4 ") Chi tiết danh mục sản phẩm
-   if(parentCategory.title)
-      h2(class="mb-4 text-primary bg-dark") Danh mục: #{parentCategory.title}
-   if(record.title)
-      h1(class="mb-4") #{record.title}
+  h1(class="mb-4 ") Chi tiết danh mục sản phẩm
+  if(parentCategory.title)
+    h2(class="mb-4 text-primary bg-dark") Danh mục: #{parentCategory.title}
+  if(record.title)
+    h1(class="mb-4") #{record.title}
 
-   if (record.thumbnail)
+  if (record.thumbnail)
     div(class="mb-4")
       img(
         src=record.thumbnail
         style="width: 100px"
       )
 
-   if (record.status)
+  if (record.status)
     div(class="mb-4")
       span Trạng thái:
       if (record.status === "active")
@@ -22,15 +22,15 @@ block main
       else
         span(class="badge badge-danger") Dừng hoạt động
 
-   if (record.position)
+  if (record.position)
     div(class="mb-4") Vị trí: <b>#{record.position}</b>
 
-   if (record.description)
+  if (record.description)
     div(class="mb-4") !{record.description}
+  if(role.permission.includes("products-category_edit"))
+    a(
+      href=`${prefixAdmin}/products-category/edit/${record.id}`
+      class="btn btn-warning"
+    ) Chỉnh sửa
 
-   a(
-    href=`${prefixAdmin}/products-category/edit/${record.id}`
-    class="btn btn-warning"
-   ) Chỉnh sửa
-
-   script(src="/admin/js/product.js")
+  script(src="/admin/js/product.js")
