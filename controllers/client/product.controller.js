@@ -10,7 +10,7 @@ module.exports.index = async (req, res) => {
     item.priceNew = ((item.price * (100 - item.discountPercentage)) / 100).toFixed(0);
     return item;
   });
-  console.log(newProducts);
+  // console.log(newProducts);
   res.render("client/pages/products/index", {
     pageTitle: "Danh Sách Sản Phẩm",
     products: newProducts,
@@ -27,7 +27,7 @@ module.exports.detail = async (req, res) => {
       status: "active",
     };
     const product = await Product.findOne(find);
-    console.log(product);
+    // console.log(product);
     res.render("client/pages/products/detail", {
       pageTitle: product.title,
       product: product,
