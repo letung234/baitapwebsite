@@ -107,7 +107,7 @@
    z-index: 999;
 }
 
-.sub-menu ul {
+.sub-menu_children {
    position: absolute;
    right: 0;
    top: 100%;
@@ -119,25 +119,25 @@
    display: none;
 }
 
-.sub-menu ul li {
+.sub-menu_children li {
    padding: 10px;
    border-bottom: 1px solid #ddd;
 }
 
-.sub-menu:hover>ul {
+.sub-menu:hover > .sub-menu_children {
    display: block;
 }
 
-.sub-menu ul li {
+.sub-menu_children li {
    position: relative;
 }
 
-.sub-menu ul li ul {
+.sub-menu_children li ul {
    right: 100%;
    top: 0;
 }
 
-.sub-menu ul li:hover>ul {
+.sub-menu_children li:hover>ul {
    display: block;
 }
 
