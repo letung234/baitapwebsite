@@ -13,7 +13,13 @@ module.exports.cartId = async (req, res, next) => {
       });
    }else{
       //Lấy ra
-      
+      const cart = await Cart.findOne({
+         _id : req.cookies.cartId
+      });
+       cart.totalQuantity = cart.products.reduce((sum,item) =>{
+         return sum + item.quantity
+      },0);
+      res.locals.miniCart = cart;
    } 
    next();
 };
