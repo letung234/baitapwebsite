@@ -7,7 +7,24 @@ header.header
             .inner-logo    
                a(href="/")
                   img(src="/image/logo.svg", alt="") 
-         .col-9 
+         .col-5 
+            form(
+               action = '/search'
+               method = "GET"
+            )
+               div(class="form-group d-flex mb-0")
+                  input(
+                     type ="text"
+                     class="form-control"
+                     placeholder = "Nhập tìm kiếm..."
+                     name="keyword"
+                     value =keyword
+                  )
+                  button(
+                      type="submit"
+              class="btn btn-primary"
+                  ) Tìm 
+         .col-4 
             .inner-menu 
                ul 
                   li 

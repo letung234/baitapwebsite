@@ -19,7 +19,6 @@ module.exports.index = async (req, res) => {
 // [GET] /products/detail/:slugProduct
 
 module.exports.detail = async (req, res) => {
-  console.log(req.params.slugProduct);
   try {
     const find = {
       slug: req.params.slugProduct,
@@ -37,7 +36,6 @@ module.exports.detail = async (req, res) => {
       product.category = category;
     }
     product.priceNew = productsHelper.priceNewProduct(product);
-    console.log(product.priceNew);
     res.render("client/pages/products/detail", {
       pageTitle: product.title,
       product: product,
