@@ -102,6 +102,7 @@ module.exports.create = async (req, res) => {
 };
 // [POST] /admin/products-category/create
 module.exports.createCategory = async (req, res) => {
+  console.log(res.locals.role.permission);
   if (req.body.position == "") {
     const countProduct = await ProductCategory.count();
     req.body.position = countProduct + 1;
