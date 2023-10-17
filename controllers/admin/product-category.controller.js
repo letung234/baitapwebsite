@@ -102,17 +102,23 @@ module.exports.create = async (req, res) => {
 };
 // [POST] /admin/products-category/create
 module.exports.createCategory = async (req, res) => {
-  console.log(res.locals.role.permission);
-  if (req.body.position == "") {
-    const countProduct = await ProductCategory.count();
-    req.body.position = countProduct + 1;
-  } else {
-    req.body.position = parseInt(req.body.position);
-  }
-  const record = new ProductCategory(req.body);
-  await record.save();
+  // console.log(res.locals.role.permission);
+  const permissions = res.locals.role.permissions;
+  if (permissions.includes("products-category_create")) {
+    if (req.body.position == "") {
+      const countProduct = await ProductCategory.count();
+      req.body.position = countProduct + 1;
+    } else {
+      req.body.position = parseInt(req.body.position);
+    }
+    const record = new ProductCategory(req.body);
+    await record.save();
 
-  res.redirect(`${systemConfig.prefixAdmin}/products-category`);
+    res.redirect(`${systemConfig.prefixAdmin}/products-category`);
+  } else {
+    res.send("403");
+    return;
+  }
 };
 
 // [GET] /admin/products-category/edit/:id
@@ -152,7 +158,6 @@ module.exports.editPatch = async (req, res) => {
     res.redirect("back");
   } catch (error) {
     req.flash("error", "Cập nhật thất bại");
-    
   }
 };
 
@@ -162,12 +167,15 @@ module.exports.delete = async (req, res) => {
   console.log(id);
 
   try {
-    await ProductCategory.updateOne({_id : id},{
-      deleted : true
-    });
-    req.flash("success","Xóa danh mục thành công")
+    await ProductCategory.updateOne(
+      { _id: id },
+      {
+        deleted: true,
+      }
+    );
+    req.flash("success", "Xóa danh mục thành công");
   } catch (error) {
-    req.flash("error","Xóa danh mục không thành công")
+    req.flash("error", "Xóa danh mục không thành công");
   }
   res.redirect(`${systemConfig.prefixAdmin}/products-category`);
 };
@@ -181,12 +189,12 @@ module.exports.detail = async (req, res) => {
       _id: id,
     };
     const record = await ProductCategory.findOne(find);
-    let parentCategory ="";
-    if(record.parent_id.length > 0){
+    let parentCategory = "";
+    if (record.parent_id.length > 0) {
       findCategory = {
         _id: record.parent_id,
       };
-       parentCategory = await ProductCategory.findOne(findCategory);
+      parentCategory = await ProductCategory.findOne(findCategory);
     }
     res.render("admin/pages/products-category/detail", {
       pageTitle: "Chi tiết danh mục sản phẩm",
