@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const generate = require("../helpers/generate");
 
-
 const userSchema = new mongoose.Schema(
   {
     fullName: String,
@@ -17,8 +16,8 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
     status: {
-      Type : String,
-      default: "active"
+      type: String,
+      default: "active",
     },
     deleted: {
       type: Boolean,

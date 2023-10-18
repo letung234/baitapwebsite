@@ -6,7 +6,6 @@ module.exports.addPost = async (req, res) => {
   const productId = req.params.productId;
   const quantity = parseInt(req.body.quantity);
   const cartId = req.cookies.cartId;
-  console.log(productId, quantity, cartId);
 
   const cart = await Cart.findOne({
     _id: cartId,
@@ -114,7 +113,7 @@ module.exports.update = async (req, res) => {
       },
       {
         $set: {
-          "products.$.quantity": quantity,
+          "products.$.quantity": quantityNew,
         },
       }
     );
