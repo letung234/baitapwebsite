@@ -8,6 +8,8 @@ var cookieParser = require("cookie-parser");
 var session = require("express-session");
 var moment = require("moment");
 const app = express();
+
+
 require("dotenv").config();
 const port = process.env.PORT;
 app.use(methodOverride("_method"));
@@ -39,7 +41,14 @@ database.connect();
 app.set("views", `${__dirname}/views`);
 app.set("view engine", "pug");
 app.use(express.static(`${__dirname}/public`));
+//Socket IO
+const http = require("http");
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server);
+global._io = io
 
+//End Socket
 route(app);
 routeAdmin(app);
 app.get("*",(req,res) =>{
@@ -47,6 +56,7 @@ app.get("*",(req,res) =>{
     pageTitle : "404 Not Found",
   });
 });
-app.listen(port, () => {
+
+server.listen(port, () => {
   console.log(`App listening on the port : ${port}`);
 });
