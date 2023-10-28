@@ -8,7 +8,7 @@ module.exports.index = async (req, res) => {
   const fullName = res.locals.user.fullName;
   // Socket
   _io.once("connection", (socket) => {
-   console.log("connect" + socket.id);
+    console.log("connect" + socket.id);
     socket.on("CLIENT_SEND_MESSAGE", async (content) => {
       console.log(content);
       //Lưu vào dtbase
@@ -25,22 +25,34 @@ module.exports.index = async (req, res) => {
         content: content,
       });
     });
+    //Typing
+    socket.on("CLIENT_SEND_TYPING", async (type) => {
+      socket.broadcast.emit("SERVER_RETURN_TYPING", {
+        userId: userId,
+        fullName: fullName,
+        type: type,
+      });
+    });
+    //End Typing
   });
 
   // End
 
   // Lấy data từ database
   const chats = await Chat.find({
-   deleted : false
+    deleted: false,
   });
-  for(const chat of chats){
-   const inforUser = await User.findOne({
-      _id : chat.user_id
-   }).select("fullName");
-   chat.inforUser = inforUser;
+  for (const chat of chats) {
+    const inforUser = await User.findOne({
+      _id: chat.user_id,
+    }).select("fullName");
+    chat.inforUser = inforUser;
   }
+
+  
+
   res.render("client/pages/chat/index", {
     pageTitle: "Chat",
-    chats : chats
+    chats: chats,
   });
 };
