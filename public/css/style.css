@@ -337,3 +337,15 @@
 }
 
 /* End chat */
+
+/* Emoji Icon */
+
+.tooltip {
+   visibility: hidden;
+}
+.tooltip.shown {
+   visibility: visible;
+   opacity: 1;
+   inset: auto auto 0px -10% !important;
+}
+/* End Emoji Icon */

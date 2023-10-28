@@ -25,12 +25,18 @@ block main
                class="inner-form"
                action=""
                )
+                  
                   input(
                   type="text"
                   placeholder="Nhập nội dung..."
                   name="content"
                   )
+                  span(
+                     class ="button-icon btn btn-light mx-2"
+                  ) 
+                     i.fa-regular.fa-face-smile-beam
                   button
                      i.fa-solid.fa-paper-plane 
 
-   
+      div(class="tooltip" role ="tooltip")
+         emoji-picker(class="light")
