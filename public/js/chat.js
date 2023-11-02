@@ -1,15 +1,28 @@
 import * as Popper from "https://cdn.jsdelivr.net/npm/@popperjs/core@^2/dist/esm/index.js";
+
+//file-upload-with-preview
+const upload = new FileUploadWithPreview.FileUploadWithPreview("upload-images", {
+  multiple: true,
+});
+
+//End file-upload-with-preview
+
 //CLIENT_SEND_MESSAGE
 const forSendData = document.querySelector(".chat .inner-form");
 if (forSendData) {
   forSendData.addEventListener("submit", (e) => {
     e.preventDefault();
     const content = e.target.elements.content.value;
-    console.log(content);
-    if (content) {
-      socket.emit("CLIENT_SEND_MESSAGE", content);
-      socket.emit("CLIENT_SEND_TYPING", "hidden");
+    const images = upload.cachedFileArray;
+    console.log(images);
+    if (content || images.length > 0) {
+      socket.emit("CLIENT_SEND_MESSAGE", {
+        content: content,
+        images: images,
+      });
       e.target.elements.content.value = "";
+      upload.resetPreviewPanel(); // clear all selected images
+      socket.emit("CLIENT_SEND_TYPING", "hidden");
     }
   });
 }
@@ -22,6 +35,8 @@ socket.on("SERVER_RETURN_MESSAGE", (data) => {
   const boxTyping = document.querySelector(".chat .inner-list-typing");
   const div = document.createElement("div");
   let htmlFullName = "";
+  let htmlContent = "";
+  let htmlImages = "";
 
   if (myId == data.userId) {
     div.classList.add("inner-outgoing");
@@ -29,9 +44,25 @@ socket.on("SERVER_RETURN_MESSAGE", (data) => {
     htmlFullName = `<div class="inner-name">${data.fullName}</div>`;
     div.classList.add("inner-incoming");
   }
+
+  if (data.content) {
+    htmlContent = `
+      <div class="inner-content">${data.content}</div>
+    `;
+  }
+  if (data.images.length > 0) {
+    htmlImages += `<div class="inner-images"> `;
+    for (const image of data.images) {
+      htmlImages += `<img src="${image}"/>`;
+    }
+
+    htmlImages += `</div>`;
+  }
+
   div.innerHTML = `
- ${htmlFullName}
- <div class="inner-content">${data.content}</div>
+    ${htmlFullName}
+    ${htmlContent}
+    ${htmlImages}
   `;
   body.insertBefore(div, boxTyping);
   body.scrollTop = body.scrollHeight;
@@ -80,7 +111,7 @@ if (emojiPicker) {
     const icon = e.detail.unicode;
     inputChat.value = inputChat.value + icon;
     const end = inputChat.value.length;
-    inputChat.setSelectionRange(end,end);
+    inputChat.setSelectionRange(end, end);
     inputChat.focus();
 
     showTyping();

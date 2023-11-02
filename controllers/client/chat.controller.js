@@ -1,5 +1,6 @@
 const Chat = require("../../models/chat.model");
 const User = require("../../models/user.model");
+const uploadToCloudinary = require("../../helpers/uploadToCloudinary");
 
 //GET /chat
 
@@ -9,12 +10,19 @@ module.exports.index = async (req, res) => {
   // Socket
   _io.once("connection", (socket) => {
     console.log("connect" + socket.id);
-    socket.on("CLIENT_SEND_MESSAGE", async (content) => {
-      console.log(content);
-      //Lưu vào dtbase
+    socket.on("CLIENT_SEND_MESSAGE", async (data) => {
+      let images = [];
+
+      for (const imageBuffer of data.images) {
+        const link = await uploadToCloudinary(imageBuffer);
+        images.push(link);
+      }
+
+      // Lưu vào dtbase
       const chat = new Chat({
         user_id: userId,
-        content: content,
+        content: data.content,
+        images: images,
       });
       await chat.save();
 
@@ -22,7 +30,8 @@ module.exports.index = async (req, res) => {
       _io.emit("SERVER_RETURN_MESSAGE", {
         userId: userId,
         fullName: fullName,
-        content: content,
+        content: data.content,
+        images: images,
       });
     });
     //Typing
