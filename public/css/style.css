@@ -228,6 +228,7 @@
    animation-duration: 0.5s;
    animation-fill-mode: both;
 }
+
 @keyframes alert-hidden {
    from {
       right: 15px;
@@ -250,6 +251,7 @@
    border-radius: 50%;
    cursor: pointer;
 }
+
 /* End show Alert */
 
 /* chat */
@@ -335,6 +337,7 @@
    padding: 0 10px;
    cursor: pointer;
 }
+
 .chat .inner-body .inner-images img {
    width: 150px;
    height: 150px;
@@ -384,11 +387,13 @@
 .tooltip {
    visibility: hidden;
 }
+
 .tooltip.shown {
    visibility: visible;
    opacity: 1;
    inset: auto auto 0px -10% !important;
 }
+
 /* End Emoji Icon */
 
 /* box-typing */
@@ -485,6 +490,22 @@
 }
 
 .box-user.add [btn-cancel-friend] {
+   display: inline-block;
+}
+
+.box-user [btn-deleted-friend] {
+   display: none;
+}
+
+.box-user.refuse [btn-accept-friend] {
+   display: none;
+}
+
+.box-user.refuse [btn-refuse-friend] {
+   display: none;
+}
+
+.box-user.refuse [btn-deleted-friend] {
    display: inline-block;
 }
 
