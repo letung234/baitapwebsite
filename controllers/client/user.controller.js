@@ -37,9 +37,10 @@ module.exports.login = async (req, res) => {
 // [POST] /user/login
 module.exports.loginPost = async (req, res) => {
   const email = req.body.email;
+  
   const password = req.body.password;
   const user = await User.findOne({
-    email: email,
+    email: { $regex: new RegExp(`^${email}$`), $options: "i" },
   });
   if (!user) {
     req.flash("error", "Email không tồn tại");
