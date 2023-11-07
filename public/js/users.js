@@ -1,15 +1,15 @@
 // Chức năng gửi yêu cầu
 const listBtnAddFriend = document.querySelectorAll("[btn-add-friend]");
-if(listBtnAddFriend.length > 0){
-   listBtnAddFriend.forEach(button => {
-      button.addEventListener("click", (e) =>{
-         const userId = button.getAttribute("btn-add-friend");
-         button.closest(".box-user").classList.add("add");
-         // console.log(userId);
+if (listBtnAddFriend.length > 0) {
+  listBtnAddFriend.forEach((button) => {
+    button.addEventListener("click", (e) => {
+      const userId = button.getAttribute("btn-add-friend");
+      button.closest(".box-user").classList.add("add");
+      // console.log(userId);
 
-         socket.emit("CLIENT_ADD_FRIEND", userId);
-      });
-   });
+      socket.emit("CLIENT_ADD_FRIEND", userId);
+    });
+  });
 }
 // Hết chức năng gửi yêu cầu
 
@@ -57,3 +57,17 @@ if (listBtnAcceptFriend.length > 0) {
   });
 }
 // Hết chức năng chấp nhận kết bạn
+
+// SERVER_RETURN_LENGTH_ACCEPT_FRIEND
+const badgeUserAccept = document.querySelector("[badge-users-accept]");
+if (badgeUserAccept) {
+  const userId = badgeUserAccept.getAttribute("badge-users-accept");
+  socket.on("SERVER_RETURN_LENGTH_ACCEPT_FRIEND", (data) => {
+    // console.log(data);
+    if (userId === data.userId) {
+      badgeUserAccept.innerHTML = data.lengthAcceptFriends;
+    }
+  });
+}
+
+// END SERVER_RETURN_LENGTH_ACCEPT_FRIEND
