@@ -37,7 +37,7 @@ module.exports.login = async (req, res) => {
 // [POST] /user/login
 module.exports.loginPost = async (req, res) => {
   const email = req.body.email;
-  
+
   const password = req.body.password;
   const user = await User.findOne({
     email: { $regex: new RegExp(`^${email}$`), $options: "i" },
@@ -60,12 +60,11 @@ module.exports.loginPost = async (req, res) => {
     return;
   }
   const cart = await Cart.findOne({
-    user_id : user.id
+    user_id: user.id,
   });
   if (cart) {
     res.cookie("cartId", cart.id);
-  }
-  else{
+  } else {
     await Cart.updateOne(
       {
         _id: req.cookies.cartId,
@@ -76,11 +75,29 @@ module.exports.loginPost = async (req, res) => {
     );
   }
   res.cookie("tokenUser", user.tokenUser);
+
+  await User.updateOne(
+    {
+      tokenUser: user.tokenUser,
+    },
+    {
+      statusOnline: "online",
+    }
+  );
+
   res.redirect("/");
 };
 
 // [GET] /user/logout
 module.exports.logout = async (req, res) => {
+  await User.updateOne(
+    {
+      tokenUser: req.cookies.tokenUser,
+    },
+    {
+      statusOnline: "offline",
+    }
+  );
   res.clearCookie("tokenUser");
   res.clearCookie("cartId");
   res.redirect("/");
@@ -117,7 +134,7 @@ module.exports.forgotPasswordPost = async (req, res) => {
   const forgotPassword = new ForgotPassword(objectForgotPassword);
   await forgotPassword.save();
   //Nếu tồn tại email thì gửi mã otp qua email
-  console.log("Gửi mã OTP qua email ",otp);
+  console.log("Gửi mã OTP qua email ", otp);
   const subject = "Mã OTP xác minh láy lại mật khẩu";
   const html = `Mã OTP để lấy lại mật khẩu là <b>${otp}</b>. Thời gian sử dụng là 3 phút`;
   sendMailHelper.sendMail(email, subject, html);
@@ -167,16 +184,16 @@ module.exports.resetPasswordPost = async (req, res) => {
   const tokenUser = req.cookies.tokenUser;
 
   await User.updateOne(
-  {
-    tokenUser : tokenUser
-  }, 
-  {
-    password : md5(password)
-  });
+    {
+      tokenUser: tokenUser,
+    },
+    {
+      password: md5(password),
+    }
+  );
 
-  res.redirect('/');
+  res.redirect("/");
 };
-
 
 // [GET] /user/info
 module.exports.info = async (req, res) => {
