@@ -20,7 +20,7 @@ if (listBtnCancelFriend.length > 0) {
   listBtnCancelFriend.forEach((button) => {
     button.addEventListener("click", (e) => {
       const userId = button.getAttribute("btn-cancel-friend");
-      button.closest(".box-user").classList.add("refuse");
+      button.closest(".box-user").classList.remove("add");
       // console.log(userId);
 
       socket.emit("CLIENT_CANCEL_FRIEND", userId);
@@ -88,6 +88,7 @@ if (dataUsersAccept) {
       // Vẽ user ra giao diện
       const div = document.createElement("div");
       div.classList.add("col-6");
+      div.setAttribute("user-id", data.infoUserA._id);
 
       div.innerHTML = `
         <div class="box-user">
@@ -134,3 +135,16 @@ if (dataUsersAccept) {
 }
 
 // END SERVER_RETURN_INFO_ACCEPT_FRIEND
+
+// SERVER_RETURN_USER_ID_FRIEND;
+ socket.on("SERVER_RETURN_USER_ID_CANCEL_FRIEND", (data) => {
+  const boxUserRemove = document.querySelector(`[user-id='${data.userIdA}']`);
+  if(boxUserRemove){
+    const dataUserAccept = document.querySelector("[data-users-accept]");
+    const userIdB = badgeUserAccept.getAttribute("badge-users-accept");
+    if(userIdB === data.userIdB){
+      dataUserAccept.removeChild(boxUserRemove);
+    }
+  }
+ });
+// END SERVER_RETURN_USER_ID_FRIEND;
