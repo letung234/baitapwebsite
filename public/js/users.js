@@ -32,7 +32,7 @@ if (listBtnCancelFriend.length > 0) {
 // Chức năng từ chối kết bạn
 const refuseFriend = (button) => {
   button.addEventListener("click", (e) => {
-   const userId = button.getAttribute("btn-refuse-friend");
+    const userId = button.getAttribute("btn-refuse-friend");
     button.closest(".box-user").classList.add("refuse");
 
     socket.emit("CLIENT_REFUSE_FRIEND", userId);
@@ -80,10 +80,11 @@ if (badgeUserAccept) {
 // END SERVER_RETURN_LENGTH_ACCEPT_FRIEND
 
 // SERVER_RETURN_INFO_ACCEPT_FRIEND
-const dataUsersAccept = document.querySelector("[data-users-accept]");
-if (dataUsersAccept) {
-  const userId = dataUsersAccept.getAttribute("data-users-accept");
-  socket.on("SERVER_RETURN_INFO_ACCEPT_FRIEND", (data) => {
+socket.on("SERVER_RETURN_INFO_ACCEPT_FRIEND", (data) => {
+  const dataUsersAccept = document.querySelector("[data-users-accept]");
+  //Trang lời mời đã nhận
+  if (dataUsersAccept) {
+    const userId = dataUsersAccept.getAttribute("data-users-accept");
     if (userId === data.userId) {
       // Vẽ user ra giao diện
       const div = document.createElement("div");
@@ -131,20 +132,32 @@ if (dataUsersAccept) {
       acceptFriend(buttonAccept);
       // Hết chấp nhận lời mời kết bạn
     }
-  });
-}
+  }
+
+  // Trang danh sách người dùng
+  const dataUserNotFriend = document.querySelector("[data-users-not-friend]");
+  if (dataUserNotFriend) {
+    const userId = dataUserNotFriend.getAttribute("data-users-not-friend");
+    if (userId === data.userId) {
+      const boxUserRemove = dataUserNotFriend.querySelector(`[user-id='${data.infoUserA._id}']`);
+      if (boxUserRemove) {
+          dataUserNotFriend.removeChild(boxUserRemove);
+      }
+    }
+  }
+});
 
 // END SERVER_RETURN_INFO_ACCEPT_FRIEND
 
 // SERVER_RETURN_USER_ID_FRIEND;
- socket.on("SERVER_RETURN_USER_ID_CANCEL_FRIEND", (data) => {
+socket.on("SERVER_RETURN_USER_ID_CANCEL_FRIEND", (data) => {
   const boxUserRemove = document.querySelector(`[user-id='${data.userIdA}']`);
-  if(boxUserRemove){
+  if (boxUserRemove) {
     const dataUserAccept = document.querySelector("[data-users-accept]");
     const userIdB = badgeUserAccept.getAttribute("badge-users-accept");
-    if(userIdB === data.userIdB){
+    if (userIdB === data.userIdB) {
       dataUserAccept.removeChild(boxUserRemove);
     }
   }
- });
+});
 // END SERVER_RETURN_USER_ID_FRIEND;
