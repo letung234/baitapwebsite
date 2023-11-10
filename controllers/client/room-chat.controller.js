@@ -2,10 +2,19 @@ const User = require("../../models/user.model");
 const RoomChat = require("../../models/rooms-chat.model");
 
 //[GET] rooms-chat/
-module.exports.index = (req,res) =>{
+module.exports.index = async (req,res) =>{
 
+   const userId = res.locals.user.id;
+   const listRoomChat = await RoomChat.find({
+      typeRoom: "group",
+      "users.user_id":userId,
+      deleted : false
+   });
+
+   console.log(listRoomChat);
    res.render("client/pages/rooms-chat/index", {
      pageTitle: "Danh sách phòng",
+     listRoomChat: listRoomChat,
    });
 }
 
