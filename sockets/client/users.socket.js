@@ -1,5 +1,5 @@
 const User = require("../../models/user.model");
-
+const RoomChat = require("../../models/rooms-chat.model");
 module.exports = (res) => {
   // Socket IO
   _io.once("connection", (socket) => {
@@ -180,12 +180,42 @@ module.exports = (res) => {
       // console.log(userId); // Id cua A
       // console.log(myUserId); // Id cua B
 
-      // Thêm {user_id, room_chat_id} của A vào friendList của B
-      // Xóa id của A trong acceptFriends của B
+      //Check exist
       const existIdAinB = await User.findOne({
         _id: myUserId,
         acceptFriends: userId,
       });
+      const existBinA = await User.findOne({
+        _id: userId,
+        requestFriends: myUserId,
+      });
+      //End Check exist
+
+      // tạo phòng chat chung
+      let roomChat;
+      if (existBinA && existIdAinB) {
+        const dataRoom = {
+          typeRoom: "friend",
+          users: [
+            {
+              user_id: userId,
+              role: "superAdmin",
+            },
+            {
+              user_id: myUserId,
+              role: "superAdmin",
+            },
+          ],
+        };
+        roomChat = new RoomChat(dataRoom);
+        await roomChat.save();
+      }
+
+      // Hết Tạo phòng chat chung
+
+      // Thêm {user_id, room_chat_id} của A vào friendList của B
+      // Xóa id của A trong acceptFriends của B
+
       if (existIdAinB) {
         await User.updateOne(
           {
@@ -195,7 +225,7 @@ module.exports = (res) => {
             $push: {
               friendList: {
                 user_id: userId,
-                room_chat_id: "",
+                room_chat_id: roomChat.id,
               },
             },
             $pull: {
@@ -206,10 +236,7 @@ module.exports = (res) => {
       }
       // Thêm {user_id, room_chat_id} của B vào friendList của A
       // Xóa id của B trong requestFriends của A
-      const existBinA = await User.findOne({
-        _id: userId,
-        requestFriends: myUserId,
-      });
+
       if (existBinA) {
         await User.updateOne(
           {
@@ -219,7 +246,7 @@ module.exports = (res) => {
             $push: {
               friendList: {
                 user_id: myUserId,
-                room_chat_id: "",
+                room_chat_id: roomChat.id,
               },
             },
             $pull: {
