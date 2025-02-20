@@ -6,12 +6,12 @@ block main
 
   .container.my-5
     .row.justify-content-center
-      .col-8
-        h1(class="text-center text-2xl font-semibold text-gray-700") Đăng nhập tài khoản
+      .col-12
+        h1(class="text-center text-2xl font-semibold text-gray-700 mb-3") Đăng nhập tài khoản
         form(
           action="/user/login"
           method="POST"
-          class="bg-white p-8 rounded-lg shadow-lg"
+          class="bg-white py-8 px-2 md:px-4 rounded-lg shadow-lg"
         )
           div(class="mb-6")
             label(for="email" class="block text-gray-700 font-medium") Email

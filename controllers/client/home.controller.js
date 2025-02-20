@@ -6,6 +6,7 @@ const BlogCategory = require("../../models/category-blog.model");
 const Account = require("../../models/account.model");
 
 module.exports.index = async (req, res) => {
+  console.log(res.locals.user)
   const sliderProducts = await Product.find({
     deleted: false,
     status: "active",

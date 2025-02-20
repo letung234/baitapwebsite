@@ -41,7 +41,8 @@ module.exports.login = async (req, res) => {
 
 // [POST] /user/login
 module.exports.loginPost = async (req, res) => {
-  const email = req.body.email;
+  try{
+const email = req.body.email;
 
   const password = req.body.password;
   const user = await User.findOne({
@@ -82,6 +83,7 @@ module.exports.loginPost = async (req, res) => {
     if (req.cookies.token) {
       res.clearCookie("token");
     }
+
   res.cookie("tokenUser", user.tokenUser, {
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
@@ -89,6 +91,13 @@ module.exports.loginPost = async (req, res) => {
  
 
   res.redirect("/");
+  }
+  catch(error){
+    console.log(error);
+    req.flash("error", "Đã xảy ra lỗi");
+    res.redirect("back");
+  }
+  
 };
 
 // [GET] /user/logout

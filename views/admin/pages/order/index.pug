@@ -1,13 +1,13 @@
 extends ../../layouts/default.pug
 block main
   if(role.permission.includes("order_view"))
-    .container.mx-auto.px-4.py-8
+    .container.mx-auto.px-2.py-8
       h1.text-3xl.font-bold.mb-6.flex.items-center
         svg.w-8.h-8.mr-2(xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor")
           path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4")
         | Quản lý Đơn hàng
 
-      .bg-white.rounded-lg.shadow.mb-6.p-4
+      .bg-white.rounded-lg.shadow.mb-6.p-2
         form.flex.flex-wrap.items-center.gap-4(action="/admin/orders" method="GET")
           .flex-1
             label.sr-only(for="keyword") Tìm kiếm
@@ -22,7 +22,7 @@ block main
               option(value="") Tất cả trạng thái
               each val, key in statusOptions
                 option(value=key selected=(statusFilter == key))= val
-            button(type="submit" class=" bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center")
+            button(type="submit" class=" bg-blue-600 text-white px-1 py-2 rounded-lg hover:bg-blue-700 flex items-center")
               svg.w-5.h-5.mr-2(xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor")
                 path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z")
               | Lọc

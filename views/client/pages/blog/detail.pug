@@ -30,7 +30,7 @@ block main
               span= `${blog.views} lượt xem`
 
           //- Nội dung
-          .prose.max-w-none !{blog.content}
+          .prose.max-w-none.text-justify !{blog.content}
 
     //- Bài viết liên quan
     if relatedBlogs.length > 0
