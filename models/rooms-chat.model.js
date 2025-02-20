@@ -4,14 +4,22 @@ const roomchatSchema = new mongoose.Schema(
   {
     title: String,
     avatar: String,
-    typeRoom: String,
-    status : String,
+    typeRoom: {
+      type: String,
+      enum: ["admin-group", "buyer-seller"],
+      required: true,
+    },
+    status: String,
     users: [
       {
-         user_id : String,
-         role : String
-      }
-    ],
+        Account_id: String,
+        role: String,
+      },
+    ], // Dùng cho nhóm quản trị viên
+    sellerBuyer: {
+      user_id: String,
+      account_id: String,
+    }, // Dùng cho chat giữa 1 người mua và 1 người bán
     deleted: {
       type: Boolean,
       default: false,
@@ -22,6 +30,7 @@ const roomchatSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
 const RoomChat = mongoose.model("RoomChat", roomchatSchema, "rooms-chat");
 
 module.exports = RoomChat;

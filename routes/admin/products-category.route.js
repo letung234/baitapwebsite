@@ -2,17 +2,17 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const validate = require("../../validaters/admin/product-category.validate");
-
+const asyncWrapper = require("../../helpers/asyncWrapper");
 const upload = multer();
 const uploadStream = require("../../middlewares/admin/uploadCloud.middleware");
 const controller = require("../../controllers/admin/product-category.controller");
-router.get("/", controller.index);
-router.get("/create", controller.create);
-router.patch("/change-status/:status/:id", controller.changeStatus);
-router.patch("/change-multi", controller.changeMulti);
-router.post("/create", upload.single("thumbnail"), uploadStream.upload, validate.creatPost, controller.createCategory);
-router.get("/edit/:id", controller.edit);
-router.patch("/edit/:id", upload.single("thumbnail"), uploadStream.upload, validate.creatPost, controller.editPatch);
-router.delete("/delete/:id",controller.delete)
-router.get("/detail/:id",controller.detail)
+router.get("/", asyncWrapper(controller.index));
+router.get("/create", asyncWrapper(controller.create));
+router.patch("/change-status/:status/:id", asyncWrapper(controller.changeStatus));
+router.patch("/change-multi", asyncWrapper(controller.changeMulti));
+router.post("/create", upload.single("thumbnail"), uploadStream.upload, validate.creatPost, asyncWrapper(controller.createCategory));
+router.get("/edit/:id", asyncWrapper(controller.edit));
+router.patch("/edit/:id", upload.single("thumbnail"), uploadStream.upload, validate.creatPost, asyncWrapper(controller.editPatch));
+router.delete("/delete/:id",asyncWrapper(controller.delete));
+router.get("/detail/:id",asyncWrapper(controller.detail));
 module.exports = router;

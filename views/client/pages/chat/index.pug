@@ -1,23 +1,44 @@
-extends ../../layouts/default.pug
+extends ../../layouts/message.pug
 include ../../mixins/box-head.pug
 
 block main
+   header(class="bg-white shadow-sm")
+    div(class="container mx-auto px-4 py-4 flex justify-between items-center")
+      button(class=" back-button flex items-center gap-2 p-2 bg-red-500 text-white hover:bg-red-600 rounded transition shadow-md" onclick="window.history.back()")
+         i.fa-solid.fa-sign-out-alt.text-white
+         span.text-white.font-semibold Thoát
+      h1(
+        class="text-xl font-semibold text-gray-800 cursor-pointer hover:text-gray-600 transition-colors"
+        
+      ) Messages
+      
    .container.my-3
-      include ../../partials/list-btn-users.pug
       .row
          .col-12
             +box-head("Chat")
+            .loader(class="w-[20px] h-[20px] mt-0 mb-2 py-0 items-start mx-2 hidden")
       .row
-         .col-12
-         .chat(my-id = user.id)
-            //- .inner-head
-            //-   .inner-avatar EY
-            //-   .inner-name Em Yêu
-            .inner-body
+         .col-12.container
+         .chat(
+            my-user-id=(currentUser ? currentUser.id : null)
+            my-account-id=(currentAccount ? currentAccount.id : null)
+            class=""
+            )
+            .inner-body.overflow-x-hidden.min-h-80
                each chat in chats
-                  div(class = (chat.user_id == user.id ? "inner-outgoing" : "inner-incoming"))
-                     if(chat.user_id != user.id)
-                        .inner-name #{chat.inforUser.fullName}
+                  - var isCurrentUser = currentUser && chat.user_id == currentUser.id;
+                  - var isCurrentAccount = currentAccount && chat.account_id == currentAccount.id;
+                  div(
+                  class=(isCurrentUser || isCurrentAccount ? "inner-outgoing" : "inner-incoming")
+                  chatid=chat.id
+                 
+                  )
+                     if (!isCurrentUser && !isCurrentAccount)
+                        div( class="flex items-center gap-1 w-auto py-1")
+                           .inner-avatar
+                              img(src=chat.senderInfo.avatar)
+                           .inner-name.min-w-40() #{chat.senderInfo.fullName}
+                              
                      if(chat.content)
                         .inner-content
                            | #{chat.content}
@@ -25,6 +46,7 @@ block main
                         .inner-images
                            each image in chat.images 
                               img(src=image)
+                     
                div(class="inner-list-typing")
             .inner-preview-images
                div(

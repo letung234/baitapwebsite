@@ -20,7 +20,24 @@ module.exports.index = async (req, res) => {
     records: records,
   });
 };
+// [GET] /admin/accounts/detail/:id
 
+module.exports.detail = async (req, res) => {
+  let find = {
+    _id: req.params.id,
+    deleted: false,
+  };
+  const data = await Account.findOne(find).select("-password -token");
+  const role = await Role.findOne({
+    _id: data.role_id,
+    deleted: false,
+  });
+  data.role = role;
+  res.render("admin/pages/accounts/detail", {
+    pageTitle: "Chi tiết tài khoản",
+    data: data,
+  });
+};
 //[GET]/admin/accounts/create
 module.exports.create = async (req, res) => {
   const roles = await Role.find({ deleted: false });
@@ -79,6 +96,7 @@ module.exports.editPatch = async (req, res) => {
   });
   if (emailExist) {
     req.flash("error", `Email ${req.body.email} đã tồn tại`);
+    res.redirect("back");
   } else {
     if (req.body.password) {
       req.body.password = md5(req.body.password);
@@ -88,5 +106,6 @@ module.exports.editPatch = async (req, res) => {
     await Account.updateOne({ _id: id },req.body);
     req.flash("success", "Cập nhật tài khoản thành công");
   }
-  res.redirect("back");
+
+  res.redirect(`${systemConfig.prefixAdmin}/accounts`);
 };

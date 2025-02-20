@@ -1,36 +1,52 @@
 import * as Popper from "https://cdn.jsdelivr.net/npm/@popperjs/core@^2/dist/esm/index.js";
-
-//file-upload-with-preview
-const upload = new FileUploadWithPreview.FileUploadWithPreview("upload-images", {
+import { FileUploadWithPreview } from "https://unpkg.com/file-upload-with-preview/dist/index.js";
+import { Spinner } from "https://cdn.jsdelivr.net/npm/spin.js@4.1.1/spin.min.js";
+// Khởi tạo FileUploadWithPreview
+const upload = new FileUploadWithPreview("upload-images", {
   multiple: true,
 });
 
-//End file-upload-with-preview
-
-//CLIENT_SEND_MESSAGE
+// CLIENT_SEND_MESSAGE
 const forSendData = document.querySelector(".chat .inner-form");
 if (forSendData) {
   forSendData.addEventListener("submit", (e) => {
     e.preventDefault();
+    socket.emit("CLIENT_SEND_TYPING", "hidden");
+    document.querySelector(".loader").classList.remove("hidden");
     const content = e.target.elements.content.value;
     const images = upload.cachedFileArray;
-    console.log(images);
+
     if (content || images.length > 0) {
+      // Gửi tin nhắn
       socket.emit("CLIENT_SEND_MESSAGE", {
         content: content,
         images: images,
       });
+
+
+      
+
+      // Xóa nội dung đã nhập và reset preview panel
       e.target.elements.content.value = "";
-      upload.resetPreviewPanel(); // clear all selected images
-      socket.emit("CLIENT_SEND_TYPING", "hidden");
+      upload.resetPreviewPanel();
+      
     }
   });
 }
-//End CLIENT_SEND_MESSAGE
+// End CLIENT_SEND_MESSAGE
 
-// SERVER_RETURN_MESSAGE;
+// SERVER_RETURN_MESSAGE
 socket.on("SERVER_RETURN_MESSAGE", (data) => {
-  const myId = document.querySelector("[my-id]").getAttribute("my-id");
+  const myUserId = document
+    .querySelector("[my-user-id]")
+    ?.getAttribute("my-user-id");
+  const myAccountId = document
+    .querySelector("[my-account-id]")
+    ?.getAttribute("my-account-id");
+
+  const isMyMessage =
+    (data.senderType === "user" && data.senderId === myUserId) ||
+    (data.senderType === "account" && data.senderId === myAccountId);
   const body = document.querySelector(".chat .inner-body");
   const boxTyping = document.querySelector(".chat .inner-list-typing");
   const div = document.createElement("div");
@@ -38,13 +54,23 @@ socket.on("SERVER_RETURN_MESSAGE", (data) => {
   let htmlContent = "";
   let htmlImages = "";
 
-  if (myId == data.userId) {
+  if (isMyMessage) {
+    
     div.classList.add("inner-outgoing");
   } else {
-    htmlFullName = `<div class="inner-name">${data.fullName}</div>`;
+    
+    htmlFullName = `
+    <div class="flex items-center gap-1 w-auto py-1">
+    <div class="inner-avatar">
+  <img  src="${encodeURI(data.avatar)}" alt="Avatar" />
+  </div>
+  <div class="inner-name min-w-40">${data.fullName}</div>
+  </div>
+`;
+
     div.classList.add("inner-incoming");
   }
-
+  
   if (data.content) {
     htmlContent = `
       <div class="inner-content">${data.content}</div>
@@ -64,12 +90,14 @@ socket.on("SERVER_RETURN_MESSAGE", (data) => {
     ${htmlContent}
     ${htmlImages}
   `;
+  document.querySelector(".loader").classList.add("hidden");
   body.insertBefore(div, boxTyping);
   body.scrollTop = body.scrollHeight;
-  // Preview Image
-   const gallery = new Viewer(div);
+
+
+
 });
-//END SERVER_RETURN_MESSAGE;
+// END SERVER_RETURN_MESSAGE
 
 // Scroll Chat To Bottom
 const bodyChat = document.querySelector(".chat .inner-body");
@@ -107,7 +135,9 @@ const showTyping = () => {
 // Insert Icon to input
 
 const emojiPicker = document.querySelector("emoji-picker");
-const inputChat = document.querySelector(".chat .inner-form input[name='content']");
+const inputChat = document.querySelector(
+  ".chat .inner-form input[name='content']"
+);
 if (emojiPicker) {
   emojiPicker.addEventListener("emoji-click", (e) => {
     const icon = e.detail.unicode;
@@ -119,7 +149,6 @@ if (emojiPicker) {
     showTyping();
   });
 }
-
 // Input Keyup
 inputChat.addEventListener("keyup", () => {
   showTyping();
@@ -134,7 +163,10 @@ const elementListTyping = document.querySelector(".chat .inner-list-typing");
 if (elementListTyping) {
   socket.on("SERVER_RETURN_TYPING", (data) => {
     if (data.type === "show") {
-      const existTyping = elementListTyping.querySelector(`[user-id="${data.userId}"]`);
+      
+      const existTyping = elementListTyping.querySelector(
+        `[user-id="${data.userId}"]`
+      );
       const bodyChat = document.querySelector(".chat .inner-body");
 
       if (!existTyping) {
@@ -142,6 +174,9 @@ if (elementListTyping) {
         boxTyping.classList.add("box-typing");
         boxTyping.setAttribute("user-id", data.userId);
         boxTyping.innerHTML = `
+         <div class="inner-avatar">
+  <img  src="${encodeURI(data.avatar)}" alt="Avatar" />
+  </div>
         <div class="inner-name">${data.fullName}</div>
         <div class="inner-dots">
           <span></span>
@@ -153,14 +188,16 @@ if (elementListTyping) {
         bodyChat.scrollTop = bodyChat.scrollHeight;
       }
     } else {
-      const boxTypingRemove = elementListTyping.querySelector(`[user-id="${data.userId}"]`);
+      const boxTypingRemove = elementListTyping.querySelector(
+        `[user-id="${data.userId}"]`
+      );
       if (boxTypingRemove) {
         elementListTyping.removeChild(boxTypingRemove);
       }
     }
   });
 }
-// END SERVER_RETURN_TYPING
+
 
 // PREVIEW FULL IMAGE
 const bodyChatPreviewImage = document.querySelector(".chat .inner-body");
@@ -170,4 +207,235 @@ if (bodyChatPreviewImage) {
 }
 
 // END PREVIEW FULL IMAGE
+
+// // DELETE MESSAGE
+// const bodyChatDelete = document.querySelector(".chat .inner-body");
+// if (bodyChatDelete) {
+//   bodyChatDelete.addEventListener("contextmenu", (e) => {
+//     e.preventDefault();
+//     const targetChat = e.target.closest("[chatid]");
+
+//     if (targetChat) {
+//       const chatId = targetChat.getAttribute("chatid");
+//       console.log(chatId);
+//       const buttondelete = targetChat.querySelector("[buttondelete]");
+//       const buttonrevoke = targetChat.querySelector("[buttonrevoke]");
+//       const contextMenu = targetChat.querySelector(".context-menu");
+//       if (contextMenu) {
+//         contextMenu.style.top = `${e.clientY}px`;
+//         contextMenu.style.left = `${e.clientX}px`;
+//         contextMenu.style.display = "block";
+//         contextMenu.style.zIndex = "9999999";
+//         const deleteHandler = async () => {
+//           try {
+//             const response = await fetch(
+//               `http://localhost:3000/chat/delete/${chatId}`,
+//               { method: "DELETE" }
+//             );
+
+//             if (response.ok) {
+//               // Xóa phần tử chat khỏi DOM
+//               const chatElement = bodyChatDelete.querySelector(
+//                 `[chatid="${chatId}"]`
+//               );
+//               if (chatElement) {
+//                 chatElement.remove();
+//               }
+//               console.log("Deleted chat successfully");
+//             } else {
+//               console.error("Failed to delete chat, response:", response);
+//             }
+//           } catch (error) {
+//             console.error("Failed to delete chat:", error);
+//           }
+//         };
+
+//         buttondelete.addEventListener("click", async () => {
+//           await deleteHandler();
+//           console.log("Deleted chat successfully");
+//         });
+//         // click ra ngoài thì sẽ ẩn đi
+//         document.addEventListener("click", function handleClickOutside(event) {
+//           if (!targetChat.contains(event.target)) {
+//             contextMenu.style.display = "none";
+//             document.removeEventListener("click", handleClickOutside);
+//           }
+//         });
+//       }
+//     }
+//   });
+// }
+// // END DELETE MASSAGE
+
+// // DOM Elements
+// const chatForm = document.getElementById('chat-form');
+// const messageInput = document.getElementById('message-input');
+// const chatBody = document.getElementById('chat-body');
+// const emojiPicker = document.getElementById('emoji-picker');
+// const typingTimeout = 3000;
+// let lastTypingTime = Date.now();
+
+// // Xử lý gửi tin nhắn
+// chatForm.addEventListener('submit', async (e) => {
+//     e.preventDefault();
+//     const content = e.target.elements.content.value;
+//     const images = upload.cachedFileArray;
+
+//     if (content || images.length > 0) {
+//       // Gửi tin nhắn
+//       socket.emit("CLIENT_SEND_MESSAGE", {
+//         content: content,
+//         images: images,
+//       });
+
+
+//       var opts = {
+//         lines: 12,
+//         length: 7,
+//         width: 5,
+//         radius: 10,
+//         scale: 0.5,
+//         corners: 1,
+//         color: "#007bff",
+//         fadeColor: "transparent",
+//         animation: "spinner-line-fade-more",
+//         rotate: 0,
+//         direction: 1,
+//         speed: 2, 
+//         zIndex: 2000000000,
+//         className: "spinner",
+//         top: "50%",
+//         left: "50%",
+//         shadow: "0 0 1px transparent",
+//         position: "absolute",
+//       };
+
+//       // Tạo spinner và gắn vào phần tử #spin-container
+//       const target = document.getElementById("spin-container");
+//       spinnerInstance = new Spinner(opts).spin(target);
+
+//       // Xóa nội dung đã nhập và reset preview panel
+//       e.target.elements.content.value = "";
+//       upload.resetPreviewPanel(); // Xóa các hình ảnh đã chọn
+//       socket.emit("CLIENT_SEND_TYPING", false);
+//     }
+ 
+// });
+
+// // Socket.IO Handlers
+// socket.on('SERVER_RETURN_MESSAGE', (message) => {
+//   const isCurrentUser = (message.senderType === 'user' && message.senderId === currentUser?._id) || 
+//                        (message.senderType === 'account' && message.senderId === currentAccount?._id);
+
+//   const messageElement = document.createElement('div');
+//   messageElement.className = `flex ${isCurrentUser ? 'justify-end' : 'justify-start'} mb-4`;
+
+//   let imagesHTML = '';
+//   if (message.images && message.images.length > 0) {
+//     imagesHTML = `
+//       <div class="grid grid-cols-2 gap-2 mt-2">
+//         ${message.images.map(img => `
+//           <img 
+//             src="${img}" 
+//             class="rounded-lg object-cover w-full h-32 cursor-pointer"
+//             onclick="viewImage('${img}')"
+//           >
+//         `).join('')}
+//       </div>
+//     `;
+//   }
+
+//   messageElement.innerHTML = `
+//     <div class="max-w-md p-3 rounded-lg ${isCurrentUser ? 'bg-blue-500 text-white' : 'bg-gray-100'}">
+//       ${!isCurrentUser ? `
+//         <div class="flex items-center mb-2">
+//           <img src="${message.avatar || '/images/default-avatar.jpg'}" 
+//                class="w-6 h-6 rounded-full mr-2">
+//           <span class="font-semibold text-sm">${message.fullName}</span>
+//         </div>
+//       ` : ''}
+//       ${message.content ? `<p class="text-sm whitespace-pre-wrap">${message.content}</p>` : ''}
+//       ${imagesHTML}
+//     </div>
+//   `;
+
+//   chatBody.appendChild(messageElement);
+//   scrollToBottom();
+// });
+
+// let typing = false;
+
+// messageInput.addEventListener('input', () => {
+//   const now = Date.now();
+//   const timeSinceLastTyping = now - lastTypingTime;
+  
+//   if (!typing && timeSinceLastTyping > typingTimeout) {
+//     typing = true;
+//     socket.emit('CLIENT_SEND_TYPING', true);
+//   }
+  
+//   lastTypingTime = now;
+  
+//   if (typing) {
+//     setTimeout(() => {
+//       const timeSinceLastTyping = Date.now() - lastTypingTime
+//       if (timeSinceLastTyping >= typingTimeout && typing) {
+//         typing = false
+//         socket.emit('CLIENT_SEND_TYPING', false)
+//       }
+//     }, typingTimeout)
+//   }
+// });
+
+// socket.on('SERVER_RETURN_TYPING', (data) => {
+//   const typingIndicators = document.getElementById('typing-indicators');
+//   const existingIndicator = document.getElementById(`typing-${data.senderId}`);
+
+//   if (data.typing) {
+//     if (!existingIndicator) {
+//       const indicator = document.createElement('div');
+//       indicator.id = `typing-${data.senderId}`;
+//       indicator.className = 'flex items-center text-gray-500 text-sm';
+//       indicator.innerHTML = `
+//         <img src="${data.avatar}" class="w-5 h-5 rounded-full mr-2">
+//         <span>${data.fullName} đang soạn tin...</span>
+//         <div class="ml-2 flex space-x-1">
+//           <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+//           <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
+//           <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></div>
+//         </div>
+//       `;
+//       typingIndicators.appendChild(indicator);
+//     }
+//   } else {
+//     if (existingIndicator) {
+//       existingIndicator.remove();
+//     }
+//   }
+// });
+
+// // Utility Functions
+// function scrollToBottom() {
+//   chatBody.scrollTop = chatBody.scrollHeight;
+// }
+
+// // Emoji Picker
+// document.addEventListener('click', (e) => {
+//   if (!e.target.closest('#emoji-picker') && !e.target.matches('#message-input')) {
+//     emojiPicker.classList.add('hidden');
+//   }
+// });
+
+// messageInput.addEventListener('focus', () => {
+//   emojiPicker.classList.remove('hidden');
+// });
+
+// new EmojiPicker({
+//   trigger: '#message-input',
+//   container: '#emoji-picker',
+//   insertTo: '#message-input'
+// });
+
+// // Initial scroll to bottom
+// scrollToBottom();
 

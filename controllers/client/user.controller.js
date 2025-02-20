@@ -23,7 +23,12 @@ module.exports.registerPost = async (req, res) => {
   req.body.password = md5(req.body.password);
   const user = new User(req.body);
   await user.save();
-  res.cookie("tokenUser", user.tokenUser);
+   if (req.cookies.token) {
+     res.clearCookie("token");
+   }
+  res.cookie("tokenUser", user.tokenUser, {
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+  });
   res.redirect("/");
 };
 
@@ -74,42 +79,20 @@ module.exports.loginPost = async (req, res) => {
       }
     );
   }
-  res.cookie("tokenUser", user.tokenUser);
-
-  await User.updateOne(
-    {
-      tokenUser: user.tokenUser,
-    },
-    {
-      statusOnline: "online",
+    if (req.cookies.token) {
+      res.clearCookie("token");
     }
-    );
-    _io.once("connection", (socket) => {
-        socket.broadcast.emit("SERVER_RETURN_USER_STATUS_ONLINE",{
-          userId : user.id,
-          status : "online"
-        });
-    });
+  res.cookie("tokenUser", user.tokenUser, {
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+  });
+
+ 
 
   res.redirect("/");
 };
 
 // [GET] /user/logout
 module.exports.logout = async (req, res) => {
-  await User.updateOne(
-    {
-      tokenUser: req.cookies.tokenUser,
-    },
-    {
-      statusOnline: "offline",
-    }
-  );
-  _io.once("connection", (socket) => {
-    socket.broadcast.emit("SERVER_RETURN_USER_STATUS_ONLINE", {
-      userId: res.locals.user.id,
-      status: "offline",
-    });
-  });
   res.clearCookie("tokenUser");
   res.clearCookie("cartId");
   res.redirect("/");
@@ -141,7 +124,11 @@ module.exports.forgotPasswordPost = async (req, res) => {
   const objectForgotPassword = {
     email: email,
     otp: otp,
-    expireAt: Date.now(),
+    expireAt: {
+        type: Date,
+        default: Date.now,
+        index: { expires: '3m' }  // Thời gian hết hạn là 3m
+    },
   };
   const forgotPassword = new ForgotPassword(objectForgotPassword);
   await forgotPassword.save();
@@ -212,4 +199,33 @@ module.exports.info = async (req, res) => {
   res.render("client/pages/user/info", {
     pageTitle: "Thông tin tài khoản",
   });
+};
+
+
+// [GET] /user/edit/:id
+module.exports.edit = async (req, res) => {
+  res.render("client/pages/user/edit", {
+    pageTitle: "Sửa thông tin tài khoản",
+  });
+};
+
+module.exports.editPatch = async (req, res) => {
+  const userId = res.locals.user.id;  
+  const { fullName, email, password, phone, avatar} = req.body;
+
+
+    const user = await User.findById(userId);
+    if (fullName !== undefined) user.fullName = fullName;
+    if (email !== undefined) user.email = email;
+    if (phone !== undefined) user.phone = phone;
+    if (avatar !== undefined) user.avatar = avatar;
+
+    if (password) {
+      user.password = md5(req.body.password);
+    }
+
+    const updatedUser = await user.save();
+
+    req.flash("success", "Cập nhập thông tin thành công !")
+    res.redirect("/user/info");
 };

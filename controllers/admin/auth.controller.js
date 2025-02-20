@@ -15,6 +15,7 @@ module.exports.login = async (req, res) => {
 
 //[POST]/admin/auth/login
 module.exports.loginPost = async (req, res) => {
+
   const email = req.body.email;
   const password = req.body.password;
   const user = await Account.findOne({
@@ -36,7 +37,12 @@ module.exports.loginPost = async (req, res) => {
     res.redirect("back");
     return;
   }
-  res.cookie("token", user.token);
+    if (req.cookies.tokenUser) {
+      res.clearCookie("tokenUser");
+    }
+res.cookie("token", user.token, {
+  maxAge: 30 * 24 * 60 * 60 * 1000,
+});
   res.redirect(`${systemConfig.prefixAdmin}/dashboard`);
 };
 

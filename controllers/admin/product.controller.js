@@ -15,6 +15,7 @@ module.exports.index = async (req, res) => {
 
   let find = {
     deleted: false,
+    "createdBy.account_id": res.locals.user._id,
   };
 
   if (req.query.status) {
@@ -49,14 +50,12 @@ module.exports.index = async (req, res) => {
   const products = await Product.find(find).sort(sort).limit(objectPagination.limitItems).skip(objectPagination.skip);
 
   for (const product of products) {
-    //retrieve creator information
     const user = await Account.findOne({
-      _id: product.createBy.account_id,
+      _id: product.createdBy.account_id,
     });
     if (user) {
       product.accountFullName = user.fullName;
     }
-    // retrieve the information in the recent most updated
     const updateBy = product.updatedBy.slice(-1)[0];
     if(updateBy){
       const userUpdated = await Account.findOne({
@@ -200,9 +199,17 @@ module.exports.create = async (req, res) => {
   });
 };
 
+module.exports.createVariants = async (req, res) => {
+  const category = await ProductCategory.find({ deleted: false });
+  const newCategory = createTreeHelper.tree(category);
+  res.render(`admin/pages/products/createVariants`, {
+    pageTitle: "Thêm mới sản phẩm",
+    category: newCategory,
+  });
+};
 // [POST] /admin/products/create/
 module.exports.createPost = async (req, res) => {
-  console.log(req.file);
+  console.log(req.body)
   req.body.price = parseInt(req.body.price);
   req.body.discountPercentage = parseInt(req.body.discountPercentage);
   req.body.stock = parseInt(req.body.stock);
@@ -213,12 +220,10 @@ module.exports.createPost = async (req, res) => {
   } else {
     req.body.position = parseInt(req.body.position);
   }
-  req.body.createBy = {
+  req.body.createdBy = {
     account_id: res.locals.user.id,
   };
-  // if (req.file) {
-  //   req.body.thumbnail = `/uploads/${req.file.filename}`;
-  // }
+
   const product = new Product(req.body);
   await product.save();
 
@@ -243,21 +248,38 @@ module.exports.edit = async (req, res) => {
       category: newCategory,
     });
   } catch (error) {
-    res.redirect(`${systemConfig.prefixAdmin / products}`);
+    res.redirect(`${systemConfig.prefixAdmin}/products`);
+  }
+};
+// [GET] /admin/products/editVariants/:id
+
+module.exports.editVariants = async (req, res) => {
+  try {
+    const find = {
+      deleted: false,
+      _id: req.params.id,
+    };
+    const category = await ProductCategory.find({ deleted: false });
+    const newCategory = createTreeHelper.tree(category);
+    const product = await Product.findOne(find);
+    console.log(product);
+    res.render(`admin/pages/products/editVariants`, {
+      pageTitle: "Chỉnh sửa sản phẩm",
+      product: product,
+      category: newCategory,
+    });
+  } catch (error) {
+    res.redirect(`${systemConfig.prefixAdmin}/products`);
   }
 };
 
 module.exports.editPatch = async (req, res) => {
-  console.log(req.body);
   const id = req.params.id;
   req.body.price = parseInt(req.body.price);
   req.body.discountPercentage = parseInt(req.body.discountPercentage);
   req.body.stock = parseInt(req.body.stock);
-
+  
   req.body.position = parseInt(req.body.position);
-  // if (req.file) {
-  //   req.body.thumbnail = `/uploads/${req.file.filename}`;
-  // }
   try {
     const updatedBy = {
       account_id: res.locals.user.id,
@@ -275,11 +297,73 @@ module.exports.editPatch = async (req, res) => {
     );
     req.flash("success", "Cập nhật thành công");
   } catch (error) {
+    console.log(error)
     req.flash("error", "Cập nhật thất bại");
   }
-  res.redirect("back");
+  res.redirect(`${systemConfig.prefixAdmin}/products`);
 };
 
+// [PATCH] /admin/products/edit-variants/:id
+module.exports.editVariantPatch = async (req, res) => {
+  const id = req.params.id;
+  const {
+    title,
+    product_category_id,
+    description,
+    featured,
+    variants,
+    status,
+    position,
+    thumbnail,
+  } = req.body;
+  try {
+    const updateData = {
+      title,
+      product_category_id,
+      description,
+      featured,
+      thumbnail,
+      status,
+      position,
+      updatedAt: Date.now()
+    };
+
+    if (variants && variants.length > 0) {
+      updateData.variants = variants.map(variant => {
+        return {
+        name: variant.name,
+        
+        value: variant.value.map(value => ({
+          value: value.value,
+          stock: Number(value.stock),
+          price: Number(value.price),
+          discountPercentage: Number(value.discountPercentage),
+          thumbnailPosition: Number(value.thumbnailPosition)
+        }))
+      }
+      });
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedProduct) {
+      req.flash("error", "Không tìm thấy sản phẩm");
+      return res.redirect(`${systemConfig.prefixAdmin}/products`);
+    }
+
+    req.flash("success", "Cập nhật sản phẩm thành công");
+    res.redirect(`${systemConfig.prefixAdmin}/products`);
+
+  } catch (error) {
+    console.error("Lỗi khi cập nhật sản phẩm:", error);
+    req.flash("error", "Có lỗi xảy ra khi cập nhật sản phẩm");
+    res.redirect(`${systemConfig.prefixAdmin}/products`);
+  }
+};
 // [GET] /admin/products/detail/:id
 module.exports.detail = async (req, res) => {
   try {
@@ -294,6 +378,53 @@ module.exports.detail = async (req, res) => {
       product: product,
     });
   } catch (error) {
-    res.redirect(`${systemConfig.prefixAdmin / products}`);
+    res.redirect(`${systemConfig.prefixAdmin}/products}`);
   }
+};
+
+
+
+// [POST] /admin/products/create-variants
+module.exports.createVariantsPost = async (req, res) => {
+  const { user } = res.locals;
+  const {
+    title,
+    product_category_id,
+    description,
+    featured,
+    variants,
+    status,
+    position,
+    thumbnail,
+  } = req.body;
+  const countProduct = await Product.count();
+  const productData = {
+    title,
+    product_category_id,
+    description,
+    featured,
+    thumbnail,
+    status,
+    position : position ? position : countProduct ,
+    createdBy: {
+      account_id: user.id,
+    },
+  };
+  if (variants && variants.length > 0) {
+        productData.variants = variants.map(variant => ({
+          name: variant.name,
+          value: variant.values.map(value => ({
+            value: value.value,
+            stock: Number(value.stock),
+            price: Number(value.price),
+            discountPercentage: Number(value.discountPercentage),
+            thumbnailPosition: Number(value.thumbnailPosition)
+          }))
+        }));
+      }
+      const newProduct = new Product(productData);
+      await newProduct.save();
+
+   req.flash("success", "Tạo thành công sản phẩm");
+   res.redirect(`${systemConfig.prefixAdmin}/products`);
 };

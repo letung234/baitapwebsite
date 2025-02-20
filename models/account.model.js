@@ -15,6 +15,14 @@ const accountSchema = new mongoose.Schema(
       type: String,
       default:"",
     },
+    cover: {
+      type: String,
+      default: undefined,
+    },
+    description: {
+      type: String,
+      default: undefined,
+    },
     role_id: String,
     status: String,
     deleted: {

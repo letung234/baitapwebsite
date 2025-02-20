@@ -255,6 +255,10 @@ module.exports = (res) => {
           }
         );
       }
+      //Lấy id của B trả về cho A
+      socket.broadcast.emit("SERVER_RETURN_USER_ID_ACCEPT_FRIEND", {
+        userId: myUserId
+      })
     });
     // Hết chức năng chấp nhận kết bạn
   });

@@ -1,17 +1,16 @@
 const RoomChat = require("../../models/rooms-chat.model");
-
+const User = require("../../models/user.model");
 module.exports.isAccess = async (req, res, next) => {
   const roomChatId = req.params.roomChatId;
-  const userId = res.locals.user.id;
-
+  
    const existUserInRoomChat = await RoomChat.findOne({
       _id : roomChatId,
-      "users.user_id": userId,
       deleted : false
    })
-
+   
   if(existUserInRoomChat){
-   next();
+    res.locals.roomName = existUserInRoomChat.title;
+    next();
   }else{
    res.redirect("/");
   }

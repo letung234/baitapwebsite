@@ -58,7 +58,7 @@ module.exports.editPatch = async (req, res) => {
   } catch (error) {
     req.flash("error", "Lỗi khi sửa quyền");
   }
-  res.redirect("back");
+ res.redirect(`${systemConfig.prefixAdmin}/roles`);
 };
 
 //[DELETE] /admin/role/delete/:id

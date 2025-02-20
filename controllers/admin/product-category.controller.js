@@ -2,16 +2,16 @@ const ProductCategory = require("../../models/product-category.model");
 const systemConfig = require("../../config/system");
 const FilterStatusHelper = require("../../helpers/filterStatus");
 const SearchHelper = require("../../helpers/search");
-const filterStatus = require("../../helpers/filterStatus");
 const createTreeHelper = require("../../helpers/createTree");
+const Account = require("../../models/account.model");
+const paginationHelper = require("../../helpers/pagination");
 // [GET] /admin/products-category
-
 module.exports.index = async (req, res) => {
   const filterStatus = FilterStatusHelper(req.query);
   const objectSearch = SearchHelper(req.query);
-  let find = {
-    deleted: false,
-  };
+
+  // Tìm danh mục cha (parent_id = "")
+  let find = { deleted: false, parent_id: "" };
 
   if (req.query.status) {
     find.status = req.query.status;
@@ -19,20 +19,79 @@ module.exports.index = async (req, res) => {
   if (objectSearch.regex) {
     find.title = objectSearch.regex;
   }
-  //sort
-  const sort = {};
-  sort.position = "desc";
-  //end sort
-  const records = await ProductCategory.find(find).sort(sort);
 
-  const newRecords = createTreeHelper.tree(records);
+  // Pagination
+  const countProducts = await ProductCategory.count(find);
+  let objectPagination = paginationHelper(
+    { currentPage: 1, limitItems: 4 },
+    req.query,
+    countProducts
+  );
+
+  // Sort
+  let sort = {};
+  if (req.query.sortKey && req.query.sortValue) {
+    sort[req.query.sortKey] = req.query.sortValue;
+  } else {
+    sort.position = "desc";
+  }
+
+  // Tìm danh mục cha
+  const parentCategories = await ProductCategory.find(find)
+    .sort(sort)
+    .limit(objectPagination.limitItems)
+    .skip(objectPagination.skip);
+
+  // Lấy danh sách ID của danh mục cha
+  const parentIds = parentCategories.map((record) => record.id);
+
+  // Đệ quy tìm tất cả danh mục con
+  const getAllChildren = async (parentIds) => {
+    let allChildren = [];
+    let queue = [...parentIds];
+
+    while (queue.length > 0) {
+      const children = await ProductCategory.find({
+        deleted: false,
+        parent_id: { $in: queue },
+      });
+      if (children.length > 0) {
+        allChildren.push(...children);
+        queue = children.map((child) => child.id);
+      } else {
+        queue = [];
+      }
+    }
+
+    return allChildren;
+  };
+
+  const allChildren = await getAllChildren(parentIds);
+
+  // Kết hợp danh mục cha & tất cả danh mục con
+  const allCategories = [...parentCategories, ...allChildren];
+
+  // Lấy thông tin người tạo danh mục
+  for (const record of allCategories) {
+    const user = await Account.findOne({ _id: record.createdBy.account_id });
+    if (user) {
+      record.accountFullName = user.fullName;
+    }
+  }
+
+  // Chuyển danh mục thành cây phân cấp
+  const newRecords = createTreeHelper.tree(allCategories);
+
+  // Render kết quả
   res.render("admin/pages/products-category/index", {
     pageTitle: "Danh mục sản phẩm",
     records: newRecords,
     filterStatus: filterStatus,
     keyword: objectSearch.keyword,
+    pagination: objectPagination,
   });
 };
+
 // [PATCH] /admin/products-category/change-status/:status/:id
 module.exports.changeStatus = async (req, res) => {
   console.log(req.params);
@@ -102,23 +161,22 @@ module.exports.create = async (req, res) => {
 };
 // [POST] /admin/products-category/create
 module.exports.createCategory = async (req, res) => {
-  // console.log(res.locals.role.permission);
-  const permissions = res.locals.role.permissions;
-  if (permissions.includes("products-category_create")) {
+
+
     if (req.body.position == "") {
       const countProduct = await ProductCategory.count();
       req.body.position = countProduct + 1;
     } else {
       req.body.position = parseInt(req.body.position);
     }
+    req.body.createBy = {
+      account_id: res.locals.user.id,
+    };
     const record = new ProductCategory(req.body);
     await record.save();
-
+    req.flash("success", "Thêm danh mục thành công");
     res.redirect(`${systemConfig.prefixAdmin}/products-category`);
-  } else {
-    res.send("403");
-    return;
-  }
+  
 };
 
 // [GET] /admin/products-category/edit/:id
@@ -155,7 +213,7 @@ module.exports.editPatch = async (req, res) => {
       req.body
     );
     req.flash("success", "Cập nhật thành công");
-    res.redirect("back");
+    res.redirect(`${systemConfig.prefixAdmin}/products-category`);
   } catch (error) {
     req.flash("error", "Cập nhật thất bại");
   }

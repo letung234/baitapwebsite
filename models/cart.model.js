@@ -7,6 +7,12 @@ const cartSchema = new mongoose.Schema(
       {
         product_id: String,
         quantity: Number,
+        variant: {
+          name: String,
+          value: String,
+        },
+        price: Number,
+        discountPercentage: Number,
       },
     ],
   },

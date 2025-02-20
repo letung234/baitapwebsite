@@ -11,9 +11,9 @@ block main
         +box-head("Lời mời đã gửi")
 
 
-    .row
+    .row(data-request)
       each user in users
-        .col-6
+        .col-6(user-id=user.id)
           div(class="box-user add")
             div(class="inner-avatar")
               img(
