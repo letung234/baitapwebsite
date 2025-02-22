@@ -29,7 +29,7 @@ block main
                   - var isCurrentUser = currentUser && chat.user_id == currentUser.id;
                   - var isCurrentAccount = currentAccount && chat.account_id == currentAccount.id;
                   div(
-                  class=(isCurrentUser || isCurrentAccount ? "inner-outgoing" : "inner-incoming")
+                  class=(isCurrentUser || isCurrentAccount ? "inner-outgoing grid justify-end" : "inner-incoming")
                   chatid=chat.id
                  
                   )

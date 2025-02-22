@@ -251,22 +251,26 @@ module.exports.dashboard = async (req, res) => {
     }
     // Thông kế cho admin
     if (role_id === "66add3a77a10dbf90af339a2") {
+      console.log("vào")
       statistic.orderDetailsAdmin = {
         completed: await calculateOrderStats(4),
         canceled: await calculateOrderStats(3),
         processing: await calculateOrderStats(1),
         paid: await calculateOrderStats(2),
       };
+      console.log("qua")
       const allCompletedOrders = await Order.find({
         status: 4,
         deleted: false,
       });
+      console.log(allCompletedOrders)
 
       let totalDiscount = 0;
 
       allCompletedOrders.forEach((order) => {
 
-        console.log(order);
+        console.log("order", order);
+        
         const discountAmount = 0.1 * order.totalAfterDiscount;
         totalDiscount += discountAmount;
       });

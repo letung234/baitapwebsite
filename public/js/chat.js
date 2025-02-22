@@ -47,6 +47,7 @@ socket.on("SERVER_RETURN_MESSAGE", (data) => {
   const isMyMessage =
     (data.senderType === "user" && data.senderId === myUserId) ||
     (data.senderType === "account" && data.senderId === myAccountId);
+    console.log(isMyMessage);
   const body = document.querySelector(".chat .inner-body");
   const boxTyping = document.querySelector(".chat .inner-list-typing");
   const div = document.createElement("div");
@@ -56,7 +57,7 @@ socket.on("SERVER_RETURN_MESSAGE", (data) => {
 
   if (isMyMessage) {
     
-    div.classList.add("inner-outgoing");
+    div.classList.add("inner-outgoing", "grid", "justify-end");
   } else {
     
     htmlFullName = `

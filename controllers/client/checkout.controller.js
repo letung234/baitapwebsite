@@ -245,7 +245,7 @@ module.exports.order = async (req, res) => {
       bank: "970422",
       accountName: "Lê Thanh Tùng",
       accountNumber: "0347754069",
-      amount: `${orderInfo.totalPrice * 230000}`,
+      amount: `${orderInfo.totalPrice * 23000}`,
       memo: `Thanh toán đơn hàng \n 
      Mã đơn hàng: ${order._id} \n
      Số Tiền là : ${orderInfo.totalPrice * 23000} VNĐ`,

@@ -46,7 +46,7 @@ mixin product-item(product)
           span(class="text-xs text-gray-500") Giá từ
         else if product.discountPercentage > 0
           del(class="text-sm text-gray-400")= `$${product.price.toFixed(2)}`
-      div(class="text-xs text-gray-500")
+      div(class="text-xs text-gray-500 h-[32px]")
         if hasVariants
           - const totalStock = product.variants.reduce((sum, variant) => sum + variant.value.reduce((s, v) => s + v.stock, 0), 0);
           span= `${totalStock} sản phẩm • ${product.variants.length} phiên bản`
