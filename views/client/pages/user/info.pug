@@ -32,10 +32,6 @@ block main
                   | Số điện thoại:
                   b.ml-2 Không có
             
-            p.text-lg.font-semibold.flex.items-center
-               span Trạng thái:
-               span.ml-2
-                  b #{user.status === "active" ? "Hoạt động" : "Dừng hoạt động"}
             
             a(href=`/user/edit/${user.id}` class="mt-4 inline-flex items-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition duration-200 ease-in-out")
                // Icon chỉnh sửa (sử dụng SVG - bạn có thể thay bằng icon library khác nếu cần)
