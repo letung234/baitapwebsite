@@ -80,7 +80,7 @@ block main
                       .text-sm.mb-4.text-gray-500
                         | #{blog.createdBy.fullName} 
                         +formatDate(blog.createdAt)
-                      .prose.text-gray-600.text-sm.mb-4
+                      .prose.text-gray-600.text-sm.mb-4(class="h-[40px]")
                         | !{blog.content.replace(/<[^>]*>/g, '').substring(0, 100)}...
                       .flex.items-center.text-primary.font-medium
                         | Xem thêm
